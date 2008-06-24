@@ -1,6 +1,7 @@
-=dvrms editor license=
+=dvrms=
+==DVR-MS MetaData Editor==
 
-==Copyright (c) 2008, Thomas J. Lamb, portions copyright by Stephen Toub; All rights reserved.==
+===Copyright (c) 2008, Thomas J. Lamb, portions copyright by Stephen Toub; All rights reserved.===
 
 _Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:_
 
