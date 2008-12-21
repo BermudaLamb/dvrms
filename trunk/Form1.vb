@@ -1,5 +1,8 @@
 #Region "Import Declaratives"
 
+Imports System.Drawing
+Imports System.Drawing.Drawing2D
+Imports System.Drawing.Imaging
 Imports System.IO
 Imports System.Text
 Imports System.Xml
@@ -21,7 +24,7 @@ Public Class Form1
 
 #End Region
 
-#Region "Form Events"
+#Region " Form Events "
 
     ''' <summary>
     ''' 
@@ -51,7 +54,7 @@ Public Class Form1
 
 #End Region
 
-#Region "Control Events"
+#Region " Control Events "
 
     ''' <summary>
     ''' 
@@ -64,7 +67,7 @@ Public Class Form1
             SaveToolStripMenuItem.Click, SaveToolStripButton.Click, _
             CustomizeToolStripMenuItem.Click, _
             DVDProfilerToolStripMenuItem.Click, _
-            ExitToolStripMenuItem.Click
+            ExitToolStripMenuItem.Click, DVDProfilerImagesToolStripMenuItem.Click
         Select Case True
             Case sender.Equals(OpenToolStripMenuItem), _
                 sender.Equals(OpenToolStripButton)
@@ -78,6 +81,8 @@ Public Class Form1
                 XMLDVRMSFiles()
             Case sender.Equals(DVDProfilerToolStripMenuItem)
                 UpdateFromDVDProfilerInfo()
+            Case sender.Equals(DVDProfilerImagesToolStripMenuItem)
+                Me.GetDVDProfilerImageDir()
             Case sender.Equals(ExitToolStripMenuItem)
                 SaveDVRMSFiles()
                 Me.Close()
@@ -215,6 +220,8 @@ Public Class Form1
 
 #End Region
 
+#Region " Support Functions "
+
     ''' <summary>
     ''' 
     ''' </summary>
@@ -294,6 +301,23 @@ Public Class Form1
             End Using
         Next
     End Sub
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <returns></returns>
+    ''' <remarks></remarks>
+    Private Function GetDVDProfilerImageDir() As String
+        Dim ofd As New FolderBrowserDialog
+        If My.Settings.ImageDir = "~" Then
+            ofd.SelectedPath = My.Computer.FileSystem.SpecialDirectories.MyDocuments
+        Else
+            ofd.SelectedPath = My.Settings.ImageDir
+        End If
+        If ofd.ShowDialog <> Windows.Forms.DialogResult.OK Then Return Nothing
+        My.Settings.ImageDir = ofd.SelectedPath
+        Return ofd.SelectedPath
+    End Function
 
     ''' <summary>
     ''' 
@@ -398,18 +422,40 @@ Public Class Form1
             Dim sRlsd As String, sPrdYr As String, sCountryOfOrigin As String
             Dim sRating As String, sDuration As String, sOverview As String
             Dim dtRlsd As DateTime, yrRlsd As String = Nothing, rInt As Integer
+            Dim sID As String
             For Each dvd As DataRow In dvds
                 ReDim Preserve checked(checked.Length)
                 checked(checked.Length - 1) = ii
+                sID = String.Empty
+                sRlsd = String.Empty
+                sPrdYr = String.Empty
+                sCountryOfOrigin = String.Empty
+                sRating = String.Empty
+                sDuration = String.Empty
+                sOverview = String.Empty
+                If Not IsDBNull(dvd("ID")) Then sID = CStr(dvd("ID"))
+                If Not String.IsNullOrEmpty(sID) Then
+                    If Not String.IsNullOrEmpty(My.Settings.ImageDir) Then
+                        Dim sFrom As String = IO.Path.Combine(My.Settings.ImageDir, sID + "f.jpg")
+                        Dim sTo As String = IO.Path.Combine(IO.Path.GetDirectoryName(dvrms.filename), _
+                            IO.Path.GetFileNameWithoutExtension(dvrms.filename) + ".jpg")
+                        If IO.File.Exists(sTo) Then IO.File.Delete(sTo)
+                        Me.OMLThumb(sFrom, sTo)
+                    End If
+                End If
                 Dim lsTitle As String = CStr(dvd("Title"))
-                sRlsd = dvd("Released")
-                If DateTime.TryParse(sRlsd, dtRlsd) Then yrRlsd = dtRlsd.Year.ToString
-                sPrdYr = dvd("ProductionYear")
-                If String.IsNullOrEmpty(sPrdYr) Then sPrdYr = yrRlsd
-                sCountryOfOrigin = dvd("CountryOfOrigin")
-                sRating = dvd("Rating")
-                sDuration = dvd("RunningTime")
-                sOverview = dvd("Overview")
+                If Not IsDBNull(dvd("Released")) Then
+                    sRlsd = dvd("Released")
+                    If DateTime.TryParse(sRlsd, dtRlsd) Then yrRlsd = dtRlsd.Year.ToString
+                    If Not IsDBNull(dvd("ProductionYear")) Then
+                        sPrdYr = dvd("ProductionYear")
+                        If String.IsNullOrEmpty(sPrdYr) Then sPrdYr = yrRlsd
+                    End If
+                End If
+                If Not IsDBNull(dvd("CountryOfOrigin")) Then sCountryOfOrigin = dvd("CountryOfOrigin")
+                If Not IsDBNull(dvd("Rating")) Then sRating = dvd("Rating")
+                If Not IsDBNull(dvd("RunningTime")) Then sDuration = dvd("RunningTime")
+                If Not IsDBNull(dvd("Overview")) Then sOverview = dvd("Overview")
 
                 Dim genre() As DataRow = {}
                 Dim studio() As DataRow = {}
@@ -436,6 +482,9 @@ Public Class Form1
                 If String.IsNullOrEmpty(dvrms.Title) Then dvrms.Title = dvrms.ToString
                 dvrms.ParentalRating = sRating
                 If String.IsNullOrEmpty(dvrms.Synopsis) Then dvrms.Synopsis = sOverview
+                If String.IsNullOrEmpty(sPrdYr) Then
+                    sPrdYr = DateTime.Today.Year.ToString
+                End If
                 dvrms.ReleaseDate = New Date(sPrdYr, 1, 1)
                 If Int32.TryParse(sDuration, rInt) Then dvrms.RunningTime = rInt
                 If studio.Length > 0 Then
@@ -804,4 +853,49 @@ Public Class Form1
     Private Sub CheckedListBox2_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles CheckedListBox2.SelectedIndexChanged
 
     End Sub
+
+#End Region
+
+#Region " Image Functions "
+
+    Private Sub OMLThumb(ByVal sFileName As String, ByVal sNewFileName As String)
+        If Not IO.File.Exists(sFileName) Then Exit Sub
+        Dim bImage() As Byte = File.ReadAllBytes(sFileName)
+        Dim nImage() As Byte = ResizeImageFile(bImage, 378)
+        IO.File.WriteAllBytes(sNewFileName, nImage)
+    End Sub
+
+    Private Function ResizeImageFile(ByVal imageFile() As Byte, ByVal targetSize As Integer) As Byte()
+        Dim mstr As MemoryStream = New MemoryStream(imageFile)
+        Dim oldImage As Image = Image.FromStream(mstr)
+        Dim newSize As Size = CalculateDimensions(oldImage.Size, targetSize)
+        Dim newImage As Bitmap = New Bitmap(newSize.Width, newSize.Height, PixelFormat.Format24bppRgb)
+        Dim canvas As Graphics = Graphics.FromImage(newImage)
+        canvas.SmoothingMode = SmoothingMode.AntiAlias
+        canvas.InterpolationMode = InterpolationMode.HighQualityBicubic
+        canvas.PixelOffsetMode = PixelOffsetMode.HighQuality
+        canvas.DrawImage(oldImage, New Rectangle(New Point(0, 0), newSize))
+        Dim m As MemoryStream = New MemoryStream
+        newImage.Save(m, ImageFormat.Jpeg)
+        Return m.GetBuffer
+        canvas.Dispose()
+        newImage.Dispose()
+        oldImage.Dispose()
+        mstr.Dispose()
+    End Function
+
+    Private Function CalculateDimensions(ByVal oldSize As Size, ByVal targetSize As Integer) As Size
+        Dim newSize As Size = New Size
+        If (oldSize.Height > oldSize.Width) Then
+            newSize.Height = targetSize
+            newSize.Width = CType((oldSize.Width * CType((targetSize / CType(oldSize.Height, Single)), Single)), Integer)
+        Else
+            newSize.Width = targetSize
+            newSize.Height = CType((oldSize.Height * CType((targetSize / CType(oldSize.Width, Single)), Single)), Integer)
+        End If
+        Return newSize
+    End Function
+
+#End Region
+
 End Class
