@@ -86,6 +86,7 @@ Partial Class Form1
         Me.CustomizeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.OptionsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.DVDProfilerToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.DVDProfilerImagesToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.HelpToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.ContentsToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.IndexToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
@@ -669,7 +670,7 @@ Partial Class Form1
         '
         'ToolsToolStripMenuItem
         '
-        Me.ToolsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CustomizeToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.DVDProfilerToolStripMenuItem})
+        Me.ToolsToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.CustomizeToolStripMenuItem, Me.OptionsToolStripMenuItem, Me.DVDProfilerToolStripMenuItem, Me.DVDProfilerImagesToolStripMenuItem})
         Me.ToolsToolStripMenuItem.Name = "ToolsToolStripMenuItem"
         Me.ToolsToolStripMenuItem.Size = New System.Drawing.Size(48, 20)
         Me.ToolsToolStripMenuItem.Text = "&Tools"
@@ -677,20 +678,26 @@ Partial Class Form1
         'CustomizeToolStripMenuItem
         '
         Me.CustomizeToolStripMenuItem.Name = "CustomizeToolStripMenuItem"
-        Me.CustomizeToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
+        Me.CustomizeToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
         Me.CustomizeToolStripMenuItem.Text = "&Customize"
         '
         'OptionsToolStripMenuItem
         '
         Me.OptionsToolStripMenuItem.Name = "OptionsToolStripMenuItem"
-        Me.OptionsToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
+        Me.OptionsToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
         Me.OptionsToolStripMenuItem.Text = "&Options"
         '
         'DVDProfilerToolStripMenuItem
         '
         Me.DVDProfilerToolStripMenuItem.Name = "DVDProfilerToolStripMenuItem"
-        Me.DVDProfilerToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.DVDProfilerToolStripMenuItem.Text = "DVDProfiler..."
+        Me.DVDProfilerToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.DVDProfilerToolStripMenuItem.Text = "&DVDProfiler..."
+        '
+        'DVDProfilerImagesToolStripMenuItem
+        '
+        Me.DVDProfilerImagesToolStripMenuItem.Name = "DVDProfilerImagesToolStripMenuItem"
+        Me.DVDProfilerImagesToolStripMenuItem.Size = New System.Drawing.Size(185, 22)
+        Me.DVDProfilerImagesToolStripMenuItem.Text = "DVDProfiler &Images..."
         '
         'HelpToolStripMenuItem
         '
@@ -962,5 +969,6 @@ Partial Class Form1
     Friend WithEvents ToolStripProgressBar1 As System.Windows.Forms.ToolStripProgressBar
     Friend WithEvents TextBox7 As System.Windows.Forms.TextBox
     Friend WithEvents Label9 As System.Windows.Forms.Label
+    Friend WithEvents DVDProfilerImagesToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
 
 End Class
